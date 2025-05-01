@@ -1,0 +1,46 @@
+{
+  "name": "node-hello-world",
+  "version": "1.0.0",
+  "description": "A simple Node.js HTTP server application that exposes a single REST endpoint /hello which returns 'Hello world' to clients",
+  "main": "index.js",
+  "private": true,
+  "engines": {
+    "node": ">=14.0.0",
+    "npm": ">=6.0.0"
+  },
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js",
+    "test": "jest",
+    "test:unit": "jest --testPathPattern=__tests__/unit",
+    "test:integration": "jest --testPathPattern=__tests__/integration",
+    "test:coverage": "jest --coverage",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "helmet": "^7.0.0"
+  },
+  "devDependencies": {
+    "eslint": "^8.40.0",
+    "eslint-plugin-jest": "^27.2.1",
+    "jest": "^29.5.0",
+    "nodemon": "^2.0.22",
+    "supertest": "^6.3.3"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/example/node-hello-world.git"
+  },
+  "keywords": [
+    "node",
+    "http",
+    "server",
+    "hello-world",
+    "rest",
+    "api"
+  ],
+  "author": "Node.js Developer",
+  "license": "MIT"
+}
