@@ -1,0 +1,87 @@
+# GitHub Actions workflow for Node.js Hello World Application
+# This workflow runs on pull requests to main and pushes to feature/bugfix/hotfix branches
+# It enforces code quality through linting, testing, and build verification
+name: Node.js CI
+
+on:
+  pull_request:
+    branches: [ main ]
+  push:
+    branches: [ 'feature/**', 'bugfix/**', 'hotfix/**' ]
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18.x
+          cache: 'npm'
+          cache-dependency-path: 'src/backend/package.json'
+      
+      - name: Install dependencies
+        working-directory: src/backend
+        run: npm ci
+      
+      - name: Run linting
+        working-directory: src/backend
+        run: npm run lint
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    needs: [lint]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18.x
+          cache: 'npm'
+          cache-dependency-path: 'src/backend/package.json'
+      
+      - name: Install dependencies
+        working-directory: src/backend
+        run: npm ci
+      
+      - name: Run unit tests
+        working-directory: src/backend
+        run: npm run test:unit
+      
+      - name: Run integration tests
+        working-directory: src/backend
+        run: npm run test:integration
+      
+      - name: Check code coverage
+        working-directory: src/backend
+        run: npm run test:coverage
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    needs: [test]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18.x
+          cache: 'npm'
+          cache-dependency-path: 'src/backend/package.json'
+      
+      - name: Install dependencies
+        working-directory: src/backend
+        run: npm ci
+      
+      - name: Build application
+        working-directory: src/backend
+        run: npm run build

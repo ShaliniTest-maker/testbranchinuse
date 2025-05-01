@@ -1,0 +1,94 @@
+version: '3.8'
+
+services:
+  # Node.js Hello World application service
+  app:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    environment:
+      # Port on which the Node.js server listens
+      - PORT=3000
+      # Node.js environment mode for optimized performance
+      - NODE_ENV=production
+      # Host interface to bind the server to
+      - HOST=0.0.0.0
+    ports:
+      # Maps container port 3000 to host port 3000 for direct access
+      - "3000:3000"
+    volumes:
+      # Persists application logs to host filesystem
+      - ./logs:/app/logs
+    healthcheck:
+      # Verifies application health by checking the /hello endpoint
+      test: ["CMD", "/app/scripts/healthcheck.sh"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+    restart: unless-stopped
+    networks:
+      - hello-world-network
+
+  # Nginx reverse proxy service (optional)
+  nginx:
+    image: nginx:1.23-alpine
+    ports:
+      # Maps container port 80 to host port 80 for HTTP access
+      - "80:80"
+    volumes:
+      # Mounts Nginx configuration from host to container
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      app:
+        # Ensures Nginx starts only after app service is healthy
+        condition: service_healthy
+    healthcheck:
+      # Verifies Nginx health by checking the /health endpoint
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
+    networks:
+      - hello-world-network
+
+networks:
+  # Internal network for communication between services
+  hello-world-network:
+    driver: bridge
+
+volumes:
+  # Volume for persisting application logs
+  logs:
+    driver: local
+
+# Deployment Profiles:
+#
+# 1. Development Profile:
+#    Description: Configuration for local development environment
+#    Environment Overrides:
+#      app:
+#        NODE_ENV: development
+#    Volume Overrides:
+#      app:
+#        - ../src:/app/src  # Mounts source code for live reloading during development
+#    Usage: docker-compose --profile development up -d
+#
+# 2. Production Profile:
+#    Description: Configuration for production deployment
+#    Environment Overrides:
+#      app:
+#        NODE_ENV: production
+#    Usage: docker-compose --profile production up -d
+#
+# 3. App-Only Profile:
+#    Description: Runs only the Node.js application without Nginx
+#    Services: app
+#    Usage: docker-compose --profile app-only up app
+#
+# Security Considerations:
+# - Non-root user: Application container runs as non-root user defined in Dockerfile
+# - Health checks: Regular health checks for both services
+# - Restart policy: unless-stopped restart policy ensures services restart automatically
+# - Isolated network: Custom bridge network isolates service communication
